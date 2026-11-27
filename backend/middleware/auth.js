@@ -3,6 +3,7 @@ const config = require('../config');
 const User = require('../models/User');
 const { httpError } = require('../utils/validation');
 
+// Checks a bearer token and attaches its account to the request.
 async function authenticate(req, res, next) {
     try {
         const header = req.get('authorization') || '';
@@ -23,6 +24,7 @@ async function authenticate(req, res, next) {
     }
 }
 
+// Blocks hotel-management routes for accounts without the admin role.
 function requireHotelAdmin(req, res, next) {
     if (req.user.role !== 'hotelAdmin') {
         return next(httpError(403, 'Only hotel administrators can manage hotel details.'));

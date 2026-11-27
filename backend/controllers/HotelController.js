@@ -16,8 +16,10 @@ const {
     validateSlots
 } = require('../utils/validation');
 
+// Handles hotel setup, public listings, availability, and admin updates.
 class HotelController {
     constructor() {
+        // Keeps controller methods bound when Express uses them as handlers.
         this.setupAdmin = this.setupAdmin.bind(this);
         this.listCities = this.listCities.bind(this);
         this.getAvailability = this.getAvailability.bind(this);
@@ -25,11 +27,13 @@ class HotelController {
         this.updateMyHotel = this.updateMyHotel.bind(this);
     }
 
+    // Creates an administrator and their first hotel using the private setup token.
     async setupAdmin(req, res) {
         if (!config.setupToken) {
             throw httpError(503, 'Hotel administrator setup is disabled. Configure SETUP_TOKEN in .env.');
         }
 
+        // Compare tokens safely before allowing a new admin account to be created.
         const suppliedToken = req.get('x-setup-token') || '';
         const expected = Buffer.from(config.setupToken);
         const supplied = Buffer.from(suppliedToken);
@@ -50,6 +54,7 @@ class HotelController {
         }
         const slots = validateSlots(req.body.slots);
 
+        // Add the hotel to its city and remove the user if the hotel setup fails.
         const user = await User.create({ name, email, passwordHash: password, role: 'hotelAdmin' });
         try {
             const city = await City.findOneAndUpdate(
@@ -72,18 +77,19 @@ class HotelController {
         }
     }
 
+    // Returns all cities, hotels, and per-day slot availability for the public page.
     async listCities(req, res) {
         const date = req.query.date ? validateBookingDate(req.query.date) : undefined;
         const cities = await City.find().sort({ name: 1 }).lean();
         const result = cities.map((city) => ({
             id: String(city._id),
             name: city.name,
-            hotels: city.hotels.map((hotel) => ({
+            hotels: (city.hotels || []).map((hotel) => ({
                 id: String(hotel._id),
                 name: hotel.name,
                 description: hotel.description,
                 address: hotel.address,
-                slots: hotel.slots.map((slot) => ({
+                slots: (hotel.slots || []).map((slot) => ({
                     id: String(slot._id),
                     startTime: slot.startTime,
                     endTime: slot.endTime,
@@ -97,6 +103,7 @@ class HotelController {
         res.json(result);
     }
 
+    // Looks up the available capacity for one hotel slot on a chosen date.
     async getAvailability(req, res) {
         const { cityId, hotelId, slotId } = req.query;
         const date = validateBookingDate(req.query.date);
@@ -115,6 +122,7 @@ class HotelController {
         res.json({ date, capacity: slot.capacity, booked, available: slot.capacity - booked });
     }
 
+    // Lists only the hotels assigned to the signed-in administrator.
     async listMyHotels(req, res) {
         const cities = await City.find({ 'hotels.adminId': req.user._id });
         const hotels = [];
@@ -129,6 +137,7 @@ class HotelController {
         res.json({ hotels });
     }
 
+    // Updates hotel details only after confirming that the admin owns the hotel.
     async updateMyHotel(req, res) {
         if (!isValidObjectId(req.params.hotelId)) {
             throw httpError(400, 'Invalid hotel id.');

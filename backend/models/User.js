@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+// Stores a guest's booking details inside their user document.
 const bookingSchema = new mongoose.Schema({
     cityId: { type: mongoose.Schema.Types.ObjectId, required: true },
     cityName: { type: String, required: true },
@@ -15,6 +16,7 @@ const bookingSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
+// Stores account details, roles, and the user's booking history.
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true, maxlength: 100 },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -23,6 +25,7 @@ const userSchema = new mongoose.Schema({
     bookings: { type: [bookingSchema], default: [] }
 }, { timestamps: true });
 
+// Hashes a password before it is saved to MongoDB.
 userSchema.pre('save', async function () {
     if (this.isModified('passwordHash')) {
         this.passwordHash = await bcrypt.hash(this.passwordHash, 12);

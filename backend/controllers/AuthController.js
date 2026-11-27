@@ -2,13 +2,16 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { createToken, publicUser, requiredText, validateEmail, validatePassword, httpError } = require('../utils/validation');
 
+// Handles guest registration, sign-in, and current-session requests.
 class AuthController {
     constructor() {
+        // Keeps these methods bound when Express uses them as route handlers.
         this.register = this.register.bind(this);
         this.login = this.login.bind(this);
         this.getCurrentUser = this.getCurrentUser.bind(this);
     }
 
+    // Validates the form and creates a new guest account.
     async register(req, res) {
         const name = requiredText(req.body.name, 'Name', 100);
         const email = validateEmail(req.body.email);
@@ -19,6 +22,7 @@ class AuthController {
         res.status(201).json({ token: createToken(user), user: publicUser(user) });
     }
 
+    // Finds an account and checks its password before issuing a session token.
     async login(req, res) {
         const email = validateEmail(req.body.email);
         const password = req.body.password;
@@ -33,6 +37,7 @@ class AuthController {
         res.json({ token: createToken(user), user: publicUser(user) });
     }
 
+    // Returns the account attached to the authenticated request.
     getCurrentUser(req, res) {
         res.json({ user: publicUser(req.user) });
     }

@@ -7,11 +7,14 @@ const {
     validateBookingDate
 } = require('../utils/validation');
 
+// Creates guest bookings and keeps the slot's daily capacity accurate.
 class BookingController {
     constructor() {
+        // Allows Express to call this method directly as a route handler.
         this.create = this.create.bind(this);
     }
 
+    // Checks the requested slot, reserves capacity, and saves the booking.
     async create(req, res) {
         if (req.user.role !== 'user') {
             throw httpError(403, 'Hotel administrator accounts cannot make guest bookings.');
@@ -39,6 +42,7 @@ class BookingController {
             throw httpError(409, 'There are not enough places left in that time slot.');
         }
 
+        // Reserve capacity atomically so concurrent requests cannot oversell the slot.
         const dailyPath = `dailyBookings.${date}`;
         const update = await City.updateOne(
             {
@@ -79,11 +83,13 @@ class BookingController {
             price: slot.price
         };
         try {
+            // Save the booking after capacity is reserved.
             const saved = await User.updateOne({ _id: req.user._id }, { $push: { bookings: booking } });
             if (saved.modifiedCount !== 1) {
                 throw httpError(404, 'Your account could not be found.');
             }
         } catch (error) {
+            // Restore capacity if saving the user's booking fails.
             await City.updateOne(
                 { _id: city._id, 'hotels._id': hotel._id, 'hotels.slots._id': slot._id },
                 { $inc: { [`hotels.$[hotel].slots.$[slot].${dailyPath}`]: -guests } },

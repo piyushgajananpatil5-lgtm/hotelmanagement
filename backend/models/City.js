@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Tracks a hotel's capacity and bookings for each calendar date.
 const slotSchema = new mongoose.Schema({
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
@@ -8,6 +9,7 @@ const slotSchema = new mongoose.Schema({
     price: { type: Number, min: 0, required: true }
 });
 
+// A hotel belongs to one city and is managed by its assigned admin.
 const hotelSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true, maxlength: 120 },
     description: { type: String, default: '', maxlength: 2000 },
@@ -16,6 +18,7 @@ const hotelSchema = new mongoose.Schema({
     slots: { type: [slotSchema], default: [] }
 });
 
+// Stores a city and its embedded hotel listings.
 const citySchema = new mongoose.Schema({
     name: { type: String, required: true, unique: true, trim: true, maxlength: 100 },
     hotels: { type: [hotelSchema], default: [] }

@@ -1,5 +1,6 @@
 'use strict';
 
+// Stores frequently used page elements and the current sign-in state.
 const message = document.getElementById('message');
 const authPanel = document.getElementById('auth-panel');
 const accountPanel = document.getElementById('account-panel');
@@ -13,18 +14,21 @@ let token = localStorage.getItem(tokenKey);
 let currentUser = null;
 let cities = [];
 
+// Escapes text before placing database values into generated HTML.
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (character) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     })[character]);
 }
 
+// Shows a success or error message at the top of the page.
 function showMessage(text, isError) {
     message.textContent = text;
     message.classList.toggle('error', Boolean(isError));
     message.classList.remove('hidden');
 }
 
+// Sends requests to the backend and adds the current user's token when present.
 async function api(url, options) {
     const request = options || {};
     const headers = { ...(request.headers || {}) };
@@ -42,6 +46,7 @@ async function api(url, options) {
     return body;
 }
 
+// Shows the correct page sections for a guest, admin, or signed-out visitor.
 function renderSession() {
     const signedIn = Boolean(currentUser);
     authPanel.classList.toggle('hidden', signedIn);
@@ -54,6 +59,7 @@ function renderSession() {
     document.getElementById('welcome').textContent = signedIn ? `Welcome, ${currentUser.name}` : '';
 }
 
+// Clears the saved token and returns the page to its signed-out state.
 function logout(showNotice) {
     token = null;
     currentUser = null;
@@ -62,6 +68,7 @@ function logout(showNotice) {
     if (showNotice) showMessage('You have signed out.', false);
 }
 
+// Displays the signed-in guest's saved bookings.
 function renderBookings(bookings) {
     const target = document.getElementById('bookings');
     if (!bookings.length) {
@@ -76,6 +83,7 @@ function renderBookings(bookings) {
         </div>`).join('');
 }
 
+// Loads editable hotel forms for hotels owned by the signed-in admin.
 async function loadAdminHotels() {
     if (!currentUser || currentUser.role !== 'hotelAdmin') return;
     const { hotels } = await api('/api/admin/hotels');
@@ -105,6 +113,7 @@ async function loadAdminHotels() {
         </form>`).join('<hr>');
 }
 
+// Builds the public list of cities, hotels, time slots, and booking forms.
 function renderCities() {
     const target = document.getElementById('city-list');
     if (!cities.length) {
@@ -138,6 +147,7 @@ function renderCities() {
         </section>`).join('');
 }
 
+// Refreshes public hotel data and any signed-in account information.
 async function refresh() {
     try {
         cities = await api('/api/cities');
@@ -155,6 +165,7 @@ async function refresh() {
     }
 }
 
+// Shows or hides the name field when the account mode changes.
 authMode.addEventListener('change', () => {
     const isRegister = authMode.value === 'register';
     document.getElementById('register-name-wrap').classList.toggle('hidden', !isRegister);
@@ -162,6 +173,7 @@ authMode.addEventListener('change', () => {
     document.getElementById('auth-password').autocomplete = isRegister ? 'new-password' : 'current-password';
 });
 
+// Submits either the guest registration form or the sign-in form.
 authForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const isRegister = authMode.value === 'register';
@@ -183,8 +195,10 @@ authForm.addEventListener('submit', async (event) => {
     }
 });
 
+// Signs the current account out when the button is clicked.
 document.getElementById('logout').addEventListener('click', () => logout(true));
 
+// Creates a hotel-admin account and its first hotel using the operator token.
 document.getElementById('setup-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     let slots;
@@ -220,6 +234,7 @@ document.getElementById('setup-form').addEventListener('submit', async (event) =
     }
 });
 
+// Handles booking submissions and hotel-admin edits from generated forms.
 document.addEventListener('submit', async (event) => {
     if (event.target.matches('.booking-form')) {
         event.preventDefault();
@@ -270,6 +285,7 @@ document.addEventListener('submit', async (event) => {
     }
 });
 
+// Checks date-specific availability when a guest selects a booking date.
 document.addEventListener('change', async (event) => {
     const dateInput = event.target;
     if (!dateInput.matches('.booking-form input[name="date"]') || !dateInput.value) return;
@@ -298,5 +314,6 @@ document.addEventListener('change', async (event) => {
     }
 });
 
+// Prepares the page and loads its initial hotel data.
 renderSession();
 refresh();

@@ -5,157 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#153a35">
     <title>Stay Local | Hotel bookings</title>
-    <style>
-        :root {
-            color-scheme: light;
-            --ink: #19332f;
-            --muted: #64736e;
-            --green: #245c50;
-            --pale: #f1f5ef;
-            --line: #dce5dc;
-            --white: #fff;
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            color: var(--ink);
-            background: #f8f9f5;
-            font: 16px/1.5 "Segoe UI", Arial, sans-serif;
-        }
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            padding: 18px max(5vw, 24px);
-            color: var(--white);
-            background: #153a35;
-        }
-        header strong { font-size: 1.2rem; letter-spacing: .04em; }
-        header span { color: #d5e4d7; }
-        main { width: min(1120px, 92vw); margin: 38px auto 72px; }
-        .hero { max-width: 700px; margin-bottom: 30px; }
-        .eyebrow { color: var(--green); font-size: .78rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
-        h1 { margin: 6px 0 10px; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.1; }
-        h2 { margin: 0 0 14px; font-size: 1.45rem; }
-        h3 { margin: 0 0 8px; font-size: 1.15rem; }
-        p { margin: 6px 0 14px; color: var(--muted); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 18px; }
-        .panel, .hotel-card {
-            padding: 22px;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            background: var(--white);
-            box-shadow: 0 8px 26px #173a3510;
-        }
-        .panel { margin-bottom: 22px; }
-        .section-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 34px 0 14px; }
-        .section-head h2 { margin-bottom: 0; }
-        .muted { color: var(--muted); font-size: .9rem; }
-        label { display: block; margin: 12px 0 5px; font-size: .9rem; font-weight: 600; }
-        input, textarea, select {
-            width: 100%;
-            padding: 10px 11px;
-            border: 1px solid #cbd8cf;
-            border-radius: 8px;
-            color: var(--ink);
-            background: #fff;
-            font: inherit;
-        }
-        textarea { min-height: 82px; resize: vertical; }
-        button {
-            margin-top: 14px;
-            padding: 10px 15px;
-            border: 0;
-            border-radius: 8px;
-            color: #fff;
-            background: var(--green);
-            font: inherit;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        button:hover { background: #17473d; }
-        button.secondary { color: var(--ink); background: #e8eee8; }
-        button.secondary:hover { background: #dce6dc; }
-        .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .actions button { margin-top: 0; }
-        .notice { margin: 14px 0; padding: 11px 14px; border-radius: 8px; background: #e8f1e8; color: #1c513e; }
-        .notice.error { background: #fff0ed; color: #8c3022; }
-        .auth-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; }
-        .slot { display: grid; grid-template-columns: 1fr 100px; gap: 10px; align-items: end; padding: 12px 0; border-top: 1px solid var(--line); }
-        .slot form { display: contents; }
-        .slot label { margin: 0; }
-        .slot button { grid-column: 1 / -1; margin-top: 2px; }
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; color: #1e5445; background: #e9f2e9; font-size: .8rem; }
-        .booking-row { padding: 11px 0; border-top: 1px solid var(--line); }
-        .hidden { display: none !important; }
-        details summary { color: var(--green); font-weight: 700; cursor: pointer; }
-        @media (max-width: 600px) {
-            header { align-items: flex-start; flex-direction: column; gap: 3px; }
-            main { margin-top: 25px; }
-            .panel, .hotel-card { padding: 17px; }
-        }
-    </style>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+    <!-- Shows the app name and the current signed-in user. -->
     <header>
         <strong>STAY LOCAL</strong>
         <span id="session-label">Book a hotel time slot</span>
     </header>
     <main>
+        <!-- Introduces the hotel booking app. -->
         <section class="hero">
             <div class="eyebrow">A better way to plan your stay</div>
             <h1>Find your next hotel.</h1>
             <p>Explore hotels by city, check live time-slot availability, and book in a few simple steps.</p>
         </section>
 
+        <!-- Displays success and error messages from the app. -->
         <div id="message" class="notice hidden" role="status" aria-live="polite"></div>
 
+        <!-- Lets guests register or lets existing users and admins sign in. -->
         <section id="auth-panel" class="panel">
+            <span class="admin-tag" title="Hotel administrators sign in with their account">Hotel admin</span>
             <h2>Sign in or create an account</h2>
-            <div class="auth-grid">
-                <form id="auth-form">
-                    <label for="auth-mode">I want to</label>
-                    <select id="auth-mode">
-                        <option value="login">Sign in</option>
-                        <option value="register">Create a guest account</option>
-                    </select>
-                    <div id="register-name-wrap" class="hidden">
-                        <label for="register-name">Full name</label>
-                        <input id="register-name" name="name" maxlength="100" autocomplete="name">
-                    </div>
-                    <label for="auth-email">Email</label>
-                    <input id="auth-email" name="email" type="email" maxlength="254" required autocomplete="email">
-                    <label for="auth-password">Password</label>
-                    <input id="auth-password" name="password" type="password" minlength="8" required autocomplete="current-password">
-                    <button type="submit">Continue</button>
-                </form>
-                <div>
-                    <h3>Hotel administrator?</h3>
-                    <p>Sign in here with your hotel-admin account to manage your own listings.</p>
-                    <div class="muted">Admin accounts are provisioned with the private setup token by the site operator.</div>
+            <form id="auth-form" class="auth-form">
+                <label for="auth-mode">I want to</label>
+                <select id="auth-mode">
+                    <option value="login">Sign in</option>
+                    <option value="register">Create a guest account</option>
+                </select>
+                <!-- The name field is shown only when creating a guest account. -->
+                <div id="register-name-wrap" class="hidden">
+                    <label for="register-name">Full name</label>
+                    <input id="register-name" name="name" maxlength="100" autocomplete="name">
                 </div>
-            </div>
+                <label for="auth-email">Email</label>
+                <input id="auth-email" name="email" type="email" maxlength="254" required autocomplete="email">
+                <label for="auth-password">Password</label>
+                <input id="auth-password" name="password" type="password" minlength="8" required autocomplete="current-password">
+                <button type="submit">Continue</button>
+            </form>
         </section>
 
+        <!-- Shows the signed-in user's name and sign-out button. -->
         <section id="account-panel" class="panel hidden">
             <div class="actions">
-                <h2 id="welcome" style="margin:0 auto 0 0"></h2>
+                <h2 id="welcome" class="welcome-heading"></h2>
                 <button id="logout" class="secondary" type="button">Sign out</button>
             </div>
         </section>
 
+        <!-- Provides hotel editing tools to the assigned hotel administrator. -->
         <section id="admin-panel" class="panel hidden">
             <h2>Your hotel listings</h2>
             <p>Only your account can change these hotel details and time slots.</p>
             <div id="admin-hotels"></div>
         </section>
 
+        <!-- Lists the current guest's bookings. -->
         <section id="bookings-panel" class="panel hidden">
             <h2>Your bookings</h2>
             <div id="bookings"></div>
         </section>
 
+        <!-- Displays cities, hotels, available slots, and booking forms. -->
         <div class="section-head">
             <div>
                 <div class="eyebrow">Explore</div>
@@ -164,10 +77,12 @@
         </div>
         <div id="city-list" class="grid"></div>
 
-        <details class="panel" style="margin-top:42px">
+        <!-- Lets the site operator create an admin account and its first hotel. -->
+        <details class="panel setup-panel">
             <summary>Operator: set up a hotel administrator</summary>
             <p>Keep the setup token private. It is required to create an administrator and their first hotel.</p>
             <form id="setup-form" class="auth-grid">
+                <!-- Account details for the new hotel administrator. -->
                 <div>
                     <label for="setup-token">Setup token</label>
                     <input id="setup-token" type="password" required autocomplete="off">
@@ -178,6 +93,7 @@
                     <label for="setup-password">Password (at least 8 characters)</label>
                     <input id="setup-password" type="password" minlength="8" required>
                 </div>
+                <!-- City, hotel, and time-slot details for the first listing. -->
                 <div>
                     <label for="setup-city">City</label>
                     <input id="setup-city" required maxlength="100">
@@ -194,6 +110,7 @@
             </form>
         </details>
     </main>
+    <!-- Loads the browser-side interactions after the page markup is ready. -->
     <script src="/app.js" defer></script>
 </body>
 </html>

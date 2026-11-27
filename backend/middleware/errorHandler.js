@@ -1,9 +1,11 @@
 const { httpError } = require('../utils/validation');
 
+// Sends a consistent not-found error for unmatched routes.
 function notFound(req, res, next) {
     next(httpError(404, 'Route not found.'));
 }
 
+// Converts validation, database, and application errors into JSON responses.
 function errorHandler(error, req, res, next) {
     if (error.code === 11000) {
         return res.status(409).json({ error: 'An account or city with that value already exists.' });
