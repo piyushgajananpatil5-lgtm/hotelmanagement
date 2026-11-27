@@ -1,0 +1,18 @@
+{
+  "name": "stay-local-hotel-booking",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hotel time-slot booking app backed by MongoDB",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "check": "node --check backend/server.js && node --check backend/app.js && node --check backend/config.js && node --check backend/database/Database.js && node --check backend/models/User.js && node --check backend/models/City.js && node --check backend/utils/validation.js && node --check backend/middleware/auth.js && node --check backend/middleware/errorHandler.js && node --check backend/controllers/AuthController.js && node --check backend/controllers/HotelController.js && node --check backend/controllers/BookingController.js && node --check backend/routes/authRoutes.js && node --check backend/routes/bookingRoutes.js && node --check backend/routes/hotelRoutes.js && node --check public/app.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.1"
+  }
+}
